@@ -48,19 +48,60 @@ if __name__ == "__main__":
     """
     Main function that is used to validate
     """
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
 
     nozzle1 = Nozzle()
-    nozzle2 = Nozzle(at = .03)
-    nozzle3 = Nozzle(at = .03, ae = .7)
+    nasars25 = Nozzle(pc = 2.1e7, tc = 3550, gamma = 1.22, r = 360, at = 0.01, ae=0.69)
+    merlin1dsea = Nozzle(pc=9.7e6, tc=3400, gamma=1.22, r=310, at=0.01, ae=0.16, pa=101325) #sea level
+    merlin1dvac = Nozzle(pc=9.7e6, tc=3400, gamma=1.22, r=310, at=0.01, ae=1.65, pa=0)
+    saturnf1 = Nozzle(pc=7.0e6, tc=3300, gamma=1.23, r=300, at=0.01, ae=0.16, pa=101325)
+    raptorvacuum = Nozzle(pc=3.0e7, tc=3500, gamma=1.20, r=370, at=0.01, ae=2.0, pa=0)
 
     nozzle1.solve()
-    nozzle2.solve()
-    nozzle3.solve()
-    
-    print("Exit Mach:", nozzle1.me, "Exit Mach 2:", nozzle2.me, "Exit Mach 3:", nozzle3.me, )
-    print("Thrust (N):", nozzle1.f, "Thrust (N) 2:", nozzle2.f, "Thrust (N) 3:", nozzle3.f)
+    nasars25.solve()
+    merlin1dsea.solve()
+    merlin1dvac.solve()
+    saturnf1.solve()
+    raptorvacuum.solve()
 
-    plt.bar([1,2,3],[nozzle1.me,nozzle2.me,nozzle3.me])
-    plt.show()
     
+    print("Exit Mach:", nozzle1.me, "Exit Mach nasars25:", nasars25.me, "Exit Mach merlin1dsea:", merlin1dsea.me, "Exit Mach marlin1dvac:", merlin1dvac.me, "Exit Mach saturnf1:", saturnf1.me, "Exit Mach raptorvacuum:", raptorvacuum.me)
+    print("Thrust (N):", nozzle1.f, "Thrust (N) nasars25:", nasars25.f, "Thrust (N) merlin1dsea:", merlin1dsea.f, "Thrust (N) merlin1dvac:", merlin1dvac.f, "Thrust (N) saturnf1:", saturnf1.f, "Thrust (N) raptorvacuum:", raptorvacuum.f)
+
+    #plt.bar([1,2,3],[nozzle1.me,nozzle2.me,nozzle3.me])
+    #plt.show()
+
+def optimality_score(nozzle):
+    if nozzle.pa == 0:
+        delta = nozzle.pe
+    else:
+        delta = abs(nozzle.pe - nozzle.pa) / nozzle.pa
+    return nozzle.f / (1 + delta)
+
+nozzles = [nozzle1, nasars25, merlin1dsea, merlin1dvac, saturnf1, raptorvacuum]
+
+names = ["Nozzle1", "NASA RS-25", "Merlin 1D Sea-Level", "Merlin 1D Vacuum", "Saturn F-1", "Raptor Vacuum"]
+
+def optimality_score(nozzle):
+    # dimensionless mismatch: Pe/Pa for sea-level, or Pe/(Pe + 1e5) for vacuum
+    if nozzle.pa == 0:
+        # vacuum environment, normalize by a reference pressure ~1e5 Pa
+        delta = nozzle.pe / 1e5
+    else:
+        # sea level
+        delta = abs(nozzle.pe - nozzle.pa) / nozzle.pa
+
+    # normalize thrust too
+    f_norm = nozzle.f / 1e6  # scale F to millions of N for numerical stability
+    score = f_norm / (1 + delta)
+    return score
+
+#scores
+scores = [optimality_score(n) for n in nozzles]
+
+#Make scores to 0-1
+max_score = max(scores)
+normalized_scores = [s / max_score for s in scores]
+
+for name, score in zip(names, normalized_scores):
+    print(f"{name}: {score:.2f}")
