@@ -48,7 +48,7 @@ if __name__ == "__main__":
     """
     Main function that is used to validate
     """
-    #import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
     nozzle1 = Nozzle()
     nasars25 = Nozzle(pc = 2.1e7, tc = 3550, gamma = 1.22, r = 360, at = 0.01, ae=0.69)
@@ -68,8 +68,8 @@ if __name__ == "__main__":
     print("Exit Mach:", nozzle1.me, "Exit Mach nasars25:", nasars25.me, "Exit Mach merlin1dsea:", merlin1dsea.me, "Exit Mach marlin1dvac:", merlin1dvac.me, "Exit Mach saturnf1:", saturnf1.me, "Exit Mach raptorvacuum:", raptorvacuum.me)
     print("Thrust (N):", nozzle1.f, "Thrust (N) nasars25:", nasars25.f, "Thrust (N) merlin1dsea:", merlin1dsea.f, "Thrust (N) merlin1dvac:", merlin1dvac.f, "Thrust (N) saturnf1:", saturnf1.f, "Thrust (N) raptorvacuum:", raptorvacuum.f)
 
-    #plt.bar([1,2,3],[nozzle1.me,nozzle2.me,nozzle3.me])
-    #plt.show()
+    plt.bar([1,2,3],[nozzle1.me,nasars25.me,merlin1dsea.me])
+    plt.show()
 
 def optimality_score(nozzle):
     if nozzle.pa == 0:
