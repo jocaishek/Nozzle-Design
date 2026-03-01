@@ -4,6 +4,7 @@ Nozzle method to store values for different nozzles
 
 import numpy as np
 from scipy.optimize import fsolve
+#from scipy.optimize import fsolve
 
 
 class Nozzle():
@@ -13,7 +14,9 @@ class Nozzle():
                 r = 287,         # J/kg-K; P=prt, r = P/pt
                 at = 0.01,       # throat area (m^2)
                 ae = 0.05,       # exit area (m^2)
-                pa = 101325):
+                pa = 101325,
+                theta_deg = 15,
+                L = 0.5):
         
         self.pc = pc
         self.tc = tc
@@ -24,6 +27,20 @@ class Nozzle():
         self.pa = pa
         self.g0 = 9.81
         self.epsilon = ae/at     #how much nozzle expands after throat
+        
+        self.theta = np.radians(theta_deg)
+        self.L = L
+
+        self.compute_geometry()
+
+
+    def compute_geometry(self):
+        self.rt = np.sqrt(self.at / np.pi)
+        self.re = self.rt + self.L * np.tan(self.theta)
+        self.ae = np.pi * self.re**2
+        self.epsilon = self.ae / self.at
+        self.eta_div = np.cos(self.theta)  # divergence efficiency
+
 
     def solve(self, me_initial_guess = 2.0):
         self.me = fsolve(self.area_mach, me_initial_guess)[0]
@@ -34,14 +51,13 @@ class Nozzle():
         #mass flow rate
         self.mdot = (self.at * self.pc * np.sqrt(self.gamma/(self.r*self.tc)) * (2/(self.gamma+1))**((self.gamma+1)/(2*(self.gamma-1))))
         #thrust
-        self.f = self.mdot * self.ve + (self.pe - self.pa) * self.ae
+        '''self.f = self.eta_div * self.mdot * self.ve + (self.pe - self.pa) * self.ae'''
         #impulse
         self.imp = self.f / (self.mdot * self.g0)
-        return 
-
+        
     def area_mach(self, M):
-        term1 = (2/(self.gamma+1)) * (1 + (self.gamma-1)/2 * M**2)
-        return (1/M) * term1**((self.gamma+1)/(2*(self.gamma-1))) - self.epsilon
+       term1 = (2/(self.gamma+1)) * (1 + (self.gamma-1)/2 * M**2)
+       return (1/M) * term1**((self.gamma+1)/(2*(self.gamma-1))) - self.epsilon
     
 
 if __name__ == "__main__":
@@ -105,3 +121,31 @@ normalized_scores = [s / max_score for s in scores]
 
 for name, score in zip(names, normalized_scores):
     print(f"{name}: {score:.2f}")
+'''
+def optimize_nozzle(base_nozzle):
+
+    def objective(x):
+        theta_deg, L = x
+
+        if theta_deg <= 1 or theta_deg >= 40:
+            return 1e9
+        if L <= 0.1 or L >= 5:
+            return 1e9
+
+        test_nozzle = Nozzle(pc=base_nozzle.pc,
+                             tc=base_nozzle.tc,
+                             gamma=base_nozzle.gamma,
+                             r=base_nozzle.r,
+                             at=base_nozzle.at,
+                             theta_deg=theta_deg,
+                             L=L,
+                             pa=base_nozzle.pa)
+
+        test_nozzle.solve()
+
+        return -test_nozzle.f   # negative for maximization
+
+    result = minimize(objective, x0=[15, 0.5], method='Nelder-Mead')
+
+    return result
+'''

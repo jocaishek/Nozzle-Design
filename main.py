@@ -11,6 +11,8 @@ ae = 0.05       # exit area (m^2)
 pa = 101325     # sea level (Pa)
 g0 = 9.81       
 epsilon = ae/at     #how much nozzle expands after throat
+theta_deg = 15 #angle
+L = 0.5
 
 #area
 def area_mach(M):
