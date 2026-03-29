@@ -51,7 +51,7 @@ class Nozzle():
         #mass flow rate
         self.mdot = (self.at * self.pc * np.sqrt(self.gamma/(self.r*self.tc)) * (2/(self.gamma+1))**((self.gamma+1)/(2*(self.gamma-1))))
         #thrust
-        '''self.f = self.eta_div * self.mdot * self.ve + (self.pe - self.pa) * self.ae'''
+        self.f = self.eta_div * self.mdot * self.ve + (self.pe - self.pa) * self.ae
         #impulse
         self.imp = self.f / (self.mdot * self.g0)
         
